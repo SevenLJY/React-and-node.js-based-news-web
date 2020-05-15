@@ -6,9 +6,6 @@ var logger = require('morgan');
 var cors = require("cors");
 
 // 1. Define router
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var testAPIRouter = require("./routes/testAPI");
 var navRouter = require("./routes/nav");
 var articleRouter = require('./routes/article');
 
@@ -23,13 +20,10 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'client/build'))); // for deploy
 app.use(cors());
 
 // 2. endpoints
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/testAPI', testAPIRouter);
 app.use('/nav', navRouter);
 app.use('/article', articleRouter);
 
@@ -49,4 +43,15 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+// for deploy
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, '/client/build/index.html'));
+});
+
+
 module.exports = app;
+
+// This is for localhost serving in package.json
+//  "scripts": {
+//    "start": "supervisor --inspect ./bin/www",
+//  },

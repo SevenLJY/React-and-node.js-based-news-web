@@ -27,7 +27,7 @@ router.get ('/category', function (req, res) {
         if (section === 'home') {
             url = 'https://content.guardianapis.com/search?api-key=' + GKEY + '&section=(sport|business|technology|politics)&show-blocks=all';
         } else {
-            if(section === 'sports'){
+            if (section === 'sports') {
                 section = 'sport';
             }
             url = 'https://content.guardianapis.com/' + section + '?api-key=' + GKEY + '&show-blocks=all';
@@ -57,7 +57,7 @@ router.get ('/search', function (req, res) {
         const url = 'https://api.nytimes.com/svc/search/v2/articlesearch.json?q=' + keyword + '&api-key=' + NKEY;
         fetch (url)
             .then (res => res.json ())
-            .then (data => res.send (filterNYData (data)))
+            .then (data => res.send (filterNYDataSearch (data)))
             .catch ((e) => console.log (e));
     }
 });
@@ -75,7 +75,7 @@ function filterNYData (data) {
             article['section'] = getSection (results[i].section);
             article['image'] = getNYImg (results[i].multimedia);
             let date = new Date (results[i].published_date);
-            article['date'] = formatDate(date);
+            article['date'] = formatDate (date);
             article['description'] = results[i].abstract;
             article['id'] = results[i].url;
             article['share'] = results[i].url;
@@ -86,6 +86,47 @@ function filterNYData (data) {
     }
     filteredData['data'] = dataList;
     return filteredData;
+}
+
+function filterNYDataSearch (data) {
+    let docs = data.response.docs;
+    let len = docs.length;
+    let filteredData = {'data': []};
+    let dataList = [];
+    for (let i = 0; i < len; ++i) {
+        if (checkNYSearchCompleted (docs[i])) {
+
+            let article = {};
+            article['source'] = 'N';
+            article['title'] = docs[i].headline.main;
+            article['section'] = getSection (docs[i].news_desk);
+            article['image'] = getNYImgSearch (docs[i].multimedia);
+            let date = new Date (docs[i].pub_date);
+            article['date'] = formatDate (date);
+            article['id'] = docs[i].web_url;
+            console.log(docs[i].web_url);
+            article['share'] = docs[i].web_url;
+            dataList.push (article);
+        }
+        if (dataList.length === 10)
+            break;
+
+    }
+    filteredData['data'] = dataList;
+    return filteredData;
+}
+
+function getNYImgSearch (imgList) {
+    if (Array.isArray (imgList)) {
+        let length = imgList.length;
+        for (let i = 0; i < length; ++i) {
+            if (imgList[i].width >= 2000) {
+                return "https://static01.nyt.com/" + imgList[i].url;
+            }
+        }
+    }
+
+    return 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Nytimes_hq.jpg';
 }
 
 function getNYImg (imgList) {
@@ -101,24 +142,28 @@ function getNYImg (imgList) {
     return 'https://upload.wikimedia.org/wikipedia/commons/0/0e/Nytimes_hq.jpg';
 }
 
-function checkNYCompleted (data) {
-    return data.title != null && data.section != null && data.published_date != null && data.abstract != null && data.url != null;
+function checkNYSearchCompleted (data) {
+    return data.headline.main && data.news_desk && data.pub_date && data.web_url;
 }
 
-function formatDate(date){
+function checkNYCompleted (data) {
+    return data.title && data.section && data.published_date && data.abstract && data.url;
+}
+
+function formatDate (date) {
     let result = [];
-    result.push(date.getFullYear());
-    let month = date.getMonth() + 1;
-    if(month < 10){
+    result.push (date.getFullYear ());
+    let month = date.getMonth () + 1;
+    if (month < 10) {
         month = '0' + month;
     }
-    result.push(month);
-    let day = date.getDate();
-    if(day < 10){
+    result.push (month);
+    let day = date.getDate ();
+    if (day < 10) {
         day = '0' + day;
     }
-    result.push(day);
-    return result.join('-');
+    result.push (day);
+    return result.join ('-');
 }
 
 function filterGuardianData (data) {
@@ -134,7 +179,7 @@ function filterGuardianData (data) {
             article['section'] = getSection (results[i].sectionId);
             article['image'] = getGuardianImg (results[i].blocks);
             let date = new Date (results[i].webPublicationDate);
-            article['date'] = formatDate(date);
+            article['date'] = formatDate (date);
             article['description'] = results[i].blocks.body[0].bodyTextSummary;
             article['id'] = results[i].id;
             article['share'] = results[i].webUrl;
@@ -148,7 +193,7 @@ function filterGuardianData (data) {
 }
 
 function checkGCompleted (data) {
-    return data.webTitle != null && data.sectionId != null && data.webPublicationDate != null && data.blocks.body[0].bodyTextSummary != null && data.id != null;
+    return data.webTitle && data.sectionId && data.webPublicationDate && data.blocks.body[0].bodyTextSummary && data.id;
 }
 
 function getGuardianImg (blocks) {

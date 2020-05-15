@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "supervisor --inspect ./bin/www"
+    "start": "node ./bin/www",
+    "server": "node ./bin/www",
+    "client": "node --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "dependencies": {
     "cookie-parser": "~1.4.4",

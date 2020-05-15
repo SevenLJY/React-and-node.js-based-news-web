@@ -1,0 +1,42 @@
+.cardItem {
+    margin: 25px 20px 25px 20px !important;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2)
+}
+
+.cardImg {
+    margin: 20px 0 0 0;
+}
+
+.badge {
+    float: right;
+    font-size: 90% !important;
+}
+
+.description {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3 ;
+    line-height: 20px;
+    max-height: 60px;
+}
+
+.title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    /*line-height: 25px;*/
+    /*max-height: 50px;*/
+}
+
+
+.toastbody {
+    color: black;
+}
+
+.toastProgress {
+    visibility: hidden !important;
+}

@@ -17,12 +17,14 @@ router.get ('/', function (req, res) {
                 res.send (JSON.stringify (filterG (JSON.parse (response), id)));
             })
     } else {
+        console.log (id);
         const url = 'https://api.nytimes.com/svc/search/v2/articlesearch.json?fq=web_url:("' + id + '")&api-key=' + NKEY;
         fetch (url)
             .then (res => res.text ())
             .then (function (response) {
                 res.send (JSON.stringify (filterNY (JSON.parse (response), id)));
-            });
+            })
+            .catch (e => console.log (e));
     }
 });
 
@@ -36,7 +38,7 @@ function filterG (data, id) {
     article['description'] = content.blocks.body[0].bodyTextSummary;
     article['share'] = content.webUrl;
     article['source'] = 'G';
-    article['section'] = getSection(content.sectionId);
+    article['section'] = getSection (content.sectionId);
     article['id'] = id;
     return article;
 }
@@ -50,7 +52,7 @@ function filterNY (data, id) {
     article['description'] = docs.abstract;
     article['share'] = docs.web_url;
     article['source'] = 'N';
-    article['section'] = getSection(docs.section_name);
+    article['section'] = getSection (docs.section_name);
     article['id'] = id;
     return article;
 }
@@ -78,25 +80,39 @@ function getImgNY (list) {
 function formatDate (dateStr) {
     let date = new Date (dateStr);
     let list = [];
-    let day = date.getDate();
-    if(day < 10){
+    let day = date.getDate ();
+    if (day < 10) {
         day = '0' + day;
     }
-    let month = date.getMonth() + 1;
-    if(month < 10){
+    let month = date.getMonth () + 1;
+    if (month < 10) {
         month = '0' + month;
     }
     list.push (date.getFullYear ());
-    list.push (day);
     list.push (month);
+    list.push (day);
     return list.join ('-');
 }
 
 
-function getSection(section){
-    if(section === 'sport')
-        return 'SPORTS';
-    return section.toUpperCase();
+function getSection (section) {
+    let target = section.toLowerCase ();
+    switch (target) {
+        case 'world':
+            return 'WORLD';
+        case 'sport':
+            return 'SPORTS';
+        case 'sports':
+            return 'SPORTS';
+        case 'politics':
+            return 'POLITICS';
+        case 'business':
+            return 'BUSINESS';
+        case 'technology':
+            return 'TECHNOLOGY';
+        default:
+            return 'HEALTH';
+    }
 }
 
 module.exports = router;
